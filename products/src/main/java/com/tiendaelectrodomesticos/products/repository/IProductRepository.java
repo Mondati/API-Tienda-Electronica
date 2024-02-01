@@ -1,6 +1,5 @@
 package com.tiendaelectrodomesticos.products.repository;
 
-import com.tiendaelectrodomesticos.products.dto.ProductDTO;
 import com.tiendaelectrodomesticos.products.model.Product;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;

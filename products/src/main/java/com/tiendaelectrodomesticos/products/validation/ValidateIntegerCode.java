@@ -3,7 +3,7 @@ package com.tiendaelectrodomesticos.products.validation;
 import org.springframework.stereotype.Component;
 
 @Component
-public class ValidateInteger implements IValidate<Integer> {
+public class ValidateIntegerCode implements IValidate<Integer> {
     private static final Integer MIN_DIGITS = 10000;
     private static final Integer MAX_DIGITS = 99999;
 

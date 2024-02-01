@@ -1,5 +1,7 @@
 package com.tiendaelectrodomesticos.products.service;
 
+import com.tiendaelectrodomesticos.products.dto.ProductDTO;
+import com.tiendaelectrodomesticos.products.exception.ResourceNotFoundException;
 import com.tiendaelectrodomesticos.products.model.Product;
 import com.tiendaelectrodomesticos.products.repository.IProductRepository;
 import com.tiendaelectrodomesticos.products.validation.IValidate;
@@ -25,16 +27,27 @@ public class ProductService implements IProductService {
 
     @Override
     public void saveProduct(Product product) {
-        stringValidate.validate(product.getName());
         LOGGER.info("Guardando producto");
         productRepo.save(product);
     }
 
     @Override
-    public Optional<Product> findProduct(Integer code) {
+    public Optional<ProductDTO> findProduct(Integer code) {
         integerValidate.validate(code);
         LOGGER.info("Buscando producto por codigo");
-        return productRepo.findByCode(code);
+        Optional<Product> product = productRepo.findByCode(code);
+        if (product.isPresent()) {
+            ProductDTO productDTO = new ProductDTO();
+            productDTO.setCode(product.get().getCode());
+            productDTO.setName(product.get().getName());
+            productDTO.setBrand(product.get().getBrand());
+            productDTO.setSinglePrice(product.get().getSinglePrice());
+            LOGGER.info("Producto " + productDTO);
+            return Optional.of(productDTO);
+        } else {
+            return Optional.empty();
+        }
+
     }
 
     @Override
@@ -42,14 +55,16 @@ public class ProductService implements IProductService {
         LOGGER.info("Listando todos los productos...");
         List<Product> productList = productRepo.findAll();
         if (productList.isEmpty()) {
-            LOGGER.info("Lista vacia sin productos");
+            LOGGER.info("Lista vacía sin productos");
             return Collections.emptyList();
+        } else {
+            return productList;
         }
-        return productList;
     }
 
+
     @Override
-    public void editProduct(Product product, Long id) {
+    public void editProduct(Product product, Long id) throws ResourceNotFoundException {
         LOGGER.info("Buscando producto por id");
         Optional<Product> searchedProduct = productRepo.findById(id);
 
@@ -63,7 +78,7 @@ public class ProductService implements IProductService {
             productRepo.save(existingProduct);
             LOGGER.info("Producto guardado " + existingProduct);
         } else {
-            throw new NoSuchElementException("Producto no encontrado con ID: " + id);
+            throw new ResourceNotFoundException("Producto no encontrado con ID: " + id);
         }
     }
 
