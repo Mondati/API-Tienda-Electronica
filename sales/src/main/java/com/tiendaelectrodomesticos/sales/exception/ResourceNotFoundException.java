@@ -1,0 +1,1 @@
+package com.tiendaelectrodomesticos.sales.exception;public class ResourceNotFoundException extends Exception {    public ResourceNotFoundException(String message) {        super(message);    }}

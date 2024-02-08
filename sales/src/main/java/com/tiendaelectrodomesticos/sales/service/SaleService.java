@@ -25,6 +25,18 @@ public class SaleService implements ISaleService {
     }
 
     @Override
+    public void deleteSale(Long id) {
+        saleRepo.deleteById(id);
+    }
+
+    @Override
+    public void editSale(Long id, Sale sale) {
+        Sale sale1 = saleRepo.findById(id).orElse(null);
+        sale1.setSaleDate(sale.getSaleDate());
+        sale1.setCartId(sale.getCartId());
+    }
+
+    @Override
     @CircuitBreaker(name = "carts-service", fallbackMethod = "fallbackGetSale")
     @Retry(name = "carts-service")
     public SaleDTO getSale(Long id) {
@@ -43,14 +55,5 @@ public class SaleService implements ISaleService {
         return new SaleDTO(null, null, null);
     }
 
-    @Override
-    public void deleteSale(Long id) {
-
-    }
-
-    @Override
-    public void editSale(Long id, Sale sale) {
-
-    }
 
 }
