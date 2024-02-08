@@ -10,6 +10,9 @@ import io.github.resilience4j.retry.annotation.Retry;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+import java.util.logging.Logger;
+
 @Service
 public class SaleService implements ISaleService {
 
@@ -18,6 +21,8 @@ public class SaleService implements ISaleService {
 
     @Autowired
     private ICartAPI cartAPI;
+
+    private final static Logger LOGGER = Logger.getLogger(String.valueOf(SaleService.class));
 
     @Override
     public void saveSale(Sale sale) {
@@ -45,7 +50,7 @@ public class SaleService implements ISaleService {
         CartDTO cartDTO = cartAPI.getCart(sale.getCartId());
 
         saleDTO.setSaleDate(sale.getSaleDate());
-        saleDTO.setCodeProduct(cartDTO.getCodeProduct());
+        saleDTO.setCodeProduct(cartDTO.getListCodeProducts());
         saleDTO.setTotalPrice(cartDTO.getTotalPrice());
 
         return saleDTO;
