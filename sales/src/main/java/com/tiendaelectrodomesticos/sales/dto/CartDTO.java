@@ -15,5 +15,4 @@ public class CartDTO {
     private Long id;
     private List<Integer> listCodeProducts;
     private Double totalPrice;
-
 }

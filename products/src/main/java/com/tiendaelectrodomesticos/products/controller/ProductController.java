@@ -5,7 +5,7 @@ import com.tiendaelectrodomesticos.products.exception.ResourceNotFoundException;
 import com.tiendaelectrodomesticos.products.model.Product;
 import com.tiendaelectrodomesticos.products.service.IProductService;
 import jakarta.validation.Valid;
-import org.apache.log4j.Logger;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.logging.Logger;
 
 @RestController
 @RequestMapping("/product")
@@ -22,7 +23,7 @@ public class ProductController {
     @Autowired
     private IProductService productServ;
 
-    private static final Logger LOGGER = Logger.getLogger(ProductController.class);
+    private static final Logger LOGGER = Logger.getLogger(String.valueOf(ProductController.class));
 
     @PostMapping("/create")
     public ResponseEntity<String> saveProduct(@Valid @RequestBody Product product) {

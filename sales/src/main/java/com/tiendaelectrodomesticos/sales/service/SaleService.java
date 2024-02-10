@@ -2,58 +2,95 @@ package com.tiendaelectrodomesticos.sales.service;
 
 import com.tiendaelectrodomesticos.sales.dto.CartDTO;
 import com.tiendaelectrodomesticos.sales.dto.SaleDTO;
+import com.tiendaelectrodomesticos.sales.exception.SaleNotFoundException;
 import com.tiendaelectrodomesticos.sales.model.Sale;
 import com.tiendaelectrodomesticos.sales.repository.ICartAPI;
 import com.tiendaelectrodomesticos.sales.repository.ISaleRepository;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import io.github.resilience4j.retry.annotation.Retry;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
+
+import java.util.Optional;
 import java.util.logging.Logger;
 
 @Service
 public class SaleService implements ISaleService {
 
-    @Autowired
-    private ISaleRepository saleRepo;
+    private final ISaleRepository saleRepo;
+    private final ICartAPI cartAPI;
 
     @Autowired
-    private ICartAPI cartAPI;
+    public SaleService(ISaleRepository saleRepo, ICartAPI cartAPI) {
+        this.saleRepo = saleRepo;
+        this.cartAPI = cartAPI;
+    }
 
-    private final static Logger LOGGER = Logger.getLogger(String.valueOf(SaleService.class));
+    private static final Logger LOGGER = Logger.getLogger(String.valueOf(SaleService.class));
 
     @Override
     public void saveSale(Sale sale) {
+        LOGGER.info("Creando venta");
         saleRepo.save(sale);
     }
 
     @Override
     public void deleteSale(Long id) {
-        saleRepo.deleteById(id);
+        Optional<Sale> sale = getSale(id);
+        if (sale.isPresent()) {
+            LOGGER.info("Borrando venta");
+            saleRepo.deleteById(id);
+        } else {
+            throw new SaleNotFoundException("No se encontro la venta con el id: " + id + " a borrar");
+        }
     }
 
     @Override
     public void editSale(Long id, Sale sale) {
-        Sale sale1 = saleRepo.findById(id).orElse(null);
-        sale1.setSaleDate(sale.getSaleDate());
-        sale1.setCartId(sale.getCartId());
+        LOGGER.info("Buscando la venta con ID: " + id);
+        Optional<Sale> existingSaleOptional = this.getSale(id);
+
+        if (existingSaleOptional.isPresent()) {
+            Sale existingSale = existingSaleOptional.get();
+            LOGGER.info("Venta encontrada: " + existingSale);
+
+            // Actualizar la venta existente con los datos proporcionados en la venta recibida
+            existingSale.setSaleDate(sale.getSaleDate());
+            existingSale.setCartId(sale.getCartId());
+
+            // Guardar los cambios en la base de datos
+            saleRepo.save(existingSale);
+
+            LOGGER.info("Venta editada con éxito: " + existingSale);
+        } else {
+            LOGGER.warning("No se encontró ninguna venta con el ID especificado: " + id);
+            throw new SaleNotFoundException("No se encontró ninguna venta con el ID especificado: " + id);
+        }
     }
 
     @Override
     @CircuitBreaker(name = "carts-service", fallbackMethod = "fallbackGetSale")
     @Retry(name = "carts-service")
-    public SaleDTO getSale(Long id) {
-        Sale sale = saleRepo.findById(id).orElse(null);
+    public Optional<SaleDTO> getSaleDTO(Long id) {
+        LOGGER.info("estoy en el service");
+        Optional<Sale> sale = getSale(id);
         SaleDTO saleDTO = new SaleDTO();
-        CartDTO cartDTO = cartAPI.getCart(sale.getCartId());
 
-        saleDTO.setSaleDate(sale.getSaleDate());
-        saleDTO.setCodeProduct(cartDTO.getListCodeProducts());
-        saleDTO.setTotalPrice(cartDTO.getTotalPrice());
+        if (sale.isPresent()) {
+            LOGGER.info("estoy en el service dentro del if");
+            CartDTO cartDTO = cartAPI.getCart(sale.get().getCartId());
+            saleDTO.setSaleDate(sale.get().getSaleDate());
+            saleDTO.setCodeProduct(cartDTO.getListCodeProducts());
+            saleDTO.setTotalPrice(cartDTO.getTotalPrice());
+            return Optional.of(saleDTO);
+        }
+        return Optional.empty();
+    }
 
-        return saleDTO;
+    public Optional<Sale> getSale(Long id) {
+        return saleRepo.findById(id);
     }
 
     public SaleDTO fallbackGetSale(Throwable throwable) {
