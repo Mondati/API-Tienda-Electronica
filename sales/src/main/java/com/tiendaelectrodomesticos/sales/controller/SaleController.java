@@ -6,7 +6,7 @@ import com.tiendaelectrodomesticos.sales.model.Sale;
 import com.tiendaelectrodomesticos.sales.service.ISaleService;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
-import lombok.SneakyThrows;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
