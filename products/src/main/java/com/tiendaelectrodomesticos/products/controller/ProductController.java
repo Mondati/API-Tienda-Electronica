@@ -13,17 +13,20 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Optional;
-import java.util.logging.Logger;
+
 
 @RestController
 @RequestMapping("/product")
 public class ProductController {
 
-    @Autowired
+
     private IProductService productServ;
 
-    private static final Logger LOGGER = Logger.getLogger(String.valueOf(ProductController.class));
+    @Autowired
+    public ProductController(IProductService productServ) {
+        this.productServ = productServ;
+    }
+
 
     @PostMapping("/create")
     public ResponseEntity<String> saveProduct(@Valid @RequestBody Product product) {
@@ -31,13 +34,14 @@ public class ProductController {
         return ResponseEntity.status(HttpStatus.CREATED).body("Producto creado exitosamente");
     }
 
+
     @GetMapping("/{code}")
-    public ResponseEntity<Optional<ProductDTO>> findProductByCode(@PathVariable Integer code) {
-        Optional<ProductDTO> productDTO = productServ.findProduct(code);
-        if (productDTO.isPresent()) {
-            return ResponseEntity.status(HttpStatus.OK).body(productDTO);
-        } else {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+    public ResponseEntity<ProductDTO> findProductByCode(@PathVariable Integer code) {
+        try {
+            ProductDTO productDTO = productServ.findProduct(code);
+            return ResponseEntity.ok(productDTO);
+        } catch (ResourceNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
     }
 
@@ -52,13 +56,14 @@ public class ProductController {
         }
     }
 
+
     @PutMapping("/edit/{id}")
     public ResponseEntity<String> editProduct(@PathVariable Long id, @RequestBody Product product) {
         try {
             productServ.editProduct(product, id);
             return ResponseEntity.ok("Producto editado correctamente");
-        } catch (ResourceNotFoundException rnfe) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(rnfe.getMessage());
+        } catch (ResourceNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         }
     }
 

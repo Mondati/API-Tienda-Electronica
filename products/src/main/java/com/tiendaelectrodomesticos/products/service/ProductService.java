@@ -4,7 +4,6 @@ import com.tiendaelectrodomesticos.products.dto.ProductDTO;
 import com.tiendaelectrodomesticos.products.exception.ResourceNotFoundException;
 import com.tiendaelectrodomesticos.products.model.Product;
 import com.tiendaelectrodomesticos.products.repository.IProductRepository;
-import com.tiendaelectrodomesticos.products.validation.IValidate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -14,16 +13,14 @@ import java.util.logging.Logger;
 @Service
 public class ProductService implements IProductService {
 
-    @Autowired
     private IProductRepository productRepo;
 
     @Autowired
-    private IValidate<String> stringValidate;
+    public ProductService(IProductRepository productRepo) {
+        this.productRepo = productRepo;
+    }
 
-    @Autowired
-    private IValidate<Integer> integerValidate;
-
-    private final static Logger LOGGER = Logger.getLogger(String.valueOf(ProductService.class));
+    private static final Logger LOGGER = Logger.getLogger(String.valueOf(ProductService.class));
 
     @Override
     public void saveProduct(Product product) {
@@ -31,23 +28,26 @@ public class ProductService implements IProductService {
         productRepo.save(product);
     }
 
+
     @Override
-    public Optional<ProductDTO> findProduct(Integer code) {
-        integerValidate.validate(code);
+    public ProductDTO findProduct(Integer code) {
         LOGGER.info("Buscando producto por codigo");
-        Optional<Product> product = productRepo.findByCode(code);
-        if (product.isPresent()) {
+        Optional<Product> optionalProduct = productRepo.findByCode(code);
+        if (optionalProduct.isPresent()) {
+            Product product = optionalProduct.get();
             ProductDTO productDTO = new ProductDTO();
-            productDTO.setCode(product.get().getCode());
-            productDTO.setName(product.get().getName());
-            productDTO.setBrand(product.get().getBrand());
-            productDTO.setSinglePrice(product.get().getSinglePrice());
+            productDTO.setCode(product.getCode());
+            productDTO.setName(product.getName());
+            productDTO.setBrand(product.getBrand());
+            productDTO.setSinglePrice(product.getSinglePrice());
             LOGGER.info("Producto " + productDTO);
-            return Optional.of(productDTO);
+            return productDTO;
         } else {
-            return Optional.empty();
+            LOGGER.info("Producto con codigo: " + code + " no encontrado");
+            throw new ResourceNotFoundException("Producto con codigo: " + code + " no encontrado");
         }
     }
+
 
     @Override
     public List<Product> findAll() {

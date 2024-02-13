@@ -1,12 +1,13 @@
 package com.tiendaelectrodomesticos.cart.service;
 
 import com.tiendaelectrodomesticos.cart.dto.ProductDTO;
+import com.tiendaelectrodomesticos.cart.exception.ProductNotFoundException;
+import com.tiendaelectrodomesticos.cart.exception.ResourceNotFoundException;
 import com.tiendaelectrodomesticos.cart.model.Cart;
 import com.tiendaelectrodomesticos.cart.repository.ICartRepository;
 import com.tiendaelectrodomesticos.cart.repository.IProductAPI;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import io.github.resilience4j.retry.annotation.Retry;
-import jakarta.ws.rs.BadRequestException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -18,57 +19,91 @@ import java.util.logging.Logger;
 @Service
 public class CartService implements ICartService {
 
-    @Autowired
-    private ICartRepository cartRepository;
+    private final ICartRepository cartRepository;
+
+    private final IProductAPI productAPI;
 
     @Autowired
-    private IProductAPI productAPI;
+    public CartService(ICartRepository cartRepository, IProductAPI productAPI) {
+        this.cartRepository = cartRepository;
+        this.productAPI = productAPI;
+    }
 
-    private final static Logger LOGGER = Logger.getLogger(String.valueOf(CartService.class));
+
+    private static final Logger LOGGER = Logger.getLogger(String.valueOf(CartService.class));
+
 
     @Override
-    public void createCart(Cart cart) {
-        try {
-            cartRepository.save(cart);
-            LOGGER.info("Creando carrito " + cart.getId() + " " + cart.getListCodeProducts() + " " + cart.getTotalPrice());
-        } catch (Exception ex) {
-            throw new RuntimeException("No se pudo crear un carrito", ex);
+    public void saveCart(Cart cart) {
+        cartRepository.save(cart);
+        LOGGER.info("Creando carrito "
+                + cart.getId()
+                + " "
+                + cart.getListCodeProducts()
+                + " "
+                + cart.getTotalPrice());
+    }
+
+
+    @Override
+    public Optional<Cart> getCart(Long id) {
+        Optional<Cart> cart = cartRepository.findById(id);
+        if (cart.isPresent()) {
+            LOGGER.info("Buscando carrito por id: " + id);
+            return cart;
+        } else {
+            throw new ResourceNotFoundException("El carrito con id: " + id + " no fue encontrado.");
         }
     }
 
-    @Override
-    public Optional<Cart> findCart(Long id) {
-        LOGGER.info("Buscando carrito por id: " + id);
-        return cartRepository.findById(id);
-    }
 
     @Override
     public void deleteCart(Long id) {
-        LOGGER.info("Eliminando carrito con id: " + id);
-        try {
+        Optional<Cart> cart = getCart(id);
+        if (cart.isPresent()) {
+            LOGGER.info("Borrando carrito con id: " + id);
             cartRepository.deleteById(id);
-        } catch (Exception ex) {
-            LOGGER.warning("Error al eliminar el carrito con ID: " + id);
-            throw new BadRequestException("Error al eliminar el carrito con ID: " + id, ex);
+        } else {
+            throw new ResourceNotFoundException("El carrito no se pudo eliminar");
         }
     }
 
+
     @Override
     public void addToCart(Long cartId, Integer productCode) {
-        Cart cart = cartRepository.findById(cartId).orElseThrow(() -> new RuntimeException("Cart not found"));
-        cart.getListCodeProducts().add(productCode);
-        LOGGER.info("guardando codigo");
-        updateTotalPrice(cart);
-        cartRepository.save(cart);
+        Optional<Cart> optionalCart = cartRepository.findById(cartId);
+        if (optionalCart.isPresent()) {
+            Cart cart = optionalCart.get();
+            cart.getListCodeProducts().add(productCode);
+            updateTotalPrice(cart);
+            LOGGER.info("guardando producto con codigo " + productCode);
+            cartRepository.save(cart);
+        } else {
+            throw new ResourceNotFoundException("No se pudo agregar correctamente");
+        }
+
     }
+
 
     @Override
     public void removeFromCart(Long cartId, Integer productCode) {
-        Cart cart = cartRepository.findById(cartId).orElseThrow(() -> new RuntimeException("Cart not found"));
-        cart.getListCodeProducts().remove(productCode);
-        updateTotalPrice(cart);
-        cartRepository.save(cart);
+        Optional<Cart> optionalCart = cartRepository.findById(cartId);
+        if (optionalCart.isPresent()) {
+            LOGGER.info("Buscando producto a eliminar: " + productCode);
+            Cart cart = optionalCart.get();
+            if (cart.getListCodeProducts().contains(productCode)) {
+                cart.getListCodeProducts().remove(productCode);
+                LOGGER.info("Producto " + productCode + " eliminado del carrito");
+            } else {
+                throw new ProductNotFoundException("El producto " + productCode + " no está presente en el carrito.");
+            }
+            updateTotalPrice(cart);
+            cartRepository.save(cart);
+        } else {
+            throw new ResourceNotFoundException("No se pudo encontrar el carrito con ID: " + cartId);
+        }
     }
+
 
     private void updateTotalPrice(Cart cart) {
         Double totalPrice = 0.0;
@@ -78,6 +113,7 @@ public class CartService implements ICartService {
         cart.setTotalPrice(totalPrice);
     }
 
+
     @CircuitBreaker(name = "products-service", fallbackMethod = "fallbackGetProductPriceByCode")
     @Retry(name = "products-service")
     private Double getProductPriceByCode(Integer productCode) {
@@ -85,9 +121,10 @@ public class CartService implements ICartService {
         if (productDTO != null) {
             return productDTO.getSinglePrice();
         } else {
-            throw new RuntimeException("Product not found");
+            throw new ResourceNotFoundException("Product not found");
         }
     }
+
 
     public ProductDTO fallbackGetProductPriceByCode(Throwable throwable) {
         return new ProductDTO(null, "fallido", null);

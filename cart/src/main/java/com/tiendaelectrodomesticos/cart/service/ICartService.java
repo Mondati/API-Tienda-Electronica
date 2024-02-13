@@ -7,9 +7,9 @@ import java.util.Optional;
 
 public interface ICartService {
 
-    public void createCart(Cart cart);
+    public void saveCart(Cart cart);
 
-    public Optional<Cart> findCart(Long id);
+    public Optional<Cart> getCart(Long id);
 
     public void deleteCart(Long id);
 

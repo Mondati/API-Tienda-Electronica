@@ -10,9 +10,9 @@ import java.util.Optional;
 public interface IProductService {
     public void saveProduct(Product product);
 
-    public Optional<ProductDTO> findProduct(Integer code);
+    public ProductDTO findProduct(Integer code);
 
     public List<Product> findAll();
 
-    public void editProduct(Product product, Long id) throws ResourceNotFoundException;
+    public void editProduct(Product product, Long id);
 }
