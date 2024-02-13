@@ -1,0 +1,14 @@
+spring:
+  application:
+    name: eureka-sv  # Sets the name of the Spring application
+  datasource:  # No datasource configuration for a Eureka server
+  jpa:  # No JPA configuration for a Eureka server
+
+server:
+  port: 8761  # Port on which the Spring Boot application will run as the Eureka server
+
+eureka:
+  client:
+    register-with-eureka: false  # Indicates whether this application should register itself with the Eureka server
+    fetch-registry: false  # Indicates whether this application should fetch registry information from the Eureka server
+

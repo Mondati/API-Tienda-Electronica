@@ -1,0 +1,14 @@
+spring:
+  application:
+    name: api-gateway  # Sets the name of the Spring application
+  cloud:
+    gateway:
+      discovery:
+        locator:
+          enabled: true  # Enables service discovery for routing using Spring Cloud DiscoveryClient
+          lower-case-service-id: true  # Converts service IDs to lowercase when registering routes
+          
+server:
+  port: 443  # Port on which the Spring Boot application will run as the API Gateway
+
+

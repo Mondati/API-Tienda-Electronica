@@ -8,12 +8,18 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 @ControllerAdvice
 public class GlobalException {
     @ExceptionHandler({ResourceNotFoundException.class})
-    public ResponseEntity<String> treatmentResourceNotFoundException(ResourceNotFoundException rnfe) {
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(rnfe.getMessage());
+    public ResponseEntity<String> treatmentResourceNotFoundException(ResourceNotFoundException e) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
     }
 
     @ExceptionHandler({BadRequestException.class})
-    public ResponseEntity<String> treatmentBadRequestException(BadRequestException bre) {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(bre.getMessage());
+    public ResponseEntity<String> treatmentBadRequestException(BadRequestException e) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
     }
+
+    @ExceptionHandler({DuplicateCodeException.class})
+    public ResponseEntity<String> treatmentDuplicateCodeException(DuplicateCodeException e) {
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
+    }
+
 }

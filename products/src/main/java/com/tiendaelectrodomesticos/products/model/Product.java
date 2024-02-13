@@ -2,6 +2,7 @@ package com.tiendaelectrodomesticos.products.model;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PositiveOrZero;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
@@ -23,8 +24,8 @@ public class Product {
     @Column(name = "id", nullable = false)
     private Long id;
 
+    @NotNull(message = "El campo code no puede estar vacío")
     @Column(unique = true)
-    @NotBlank(message = "El campo code no puede estar vacío")
     private Integer code;
 
     @NotBlank(message = "El campo name no puede estar vacío")
@@ -35,7 +36,7 @@ public class Product {
     @Size(max = 25, min = 1, message = "La marca no puede contener mas de 25 caracteres")
     private String brand;
 
-    @NotBlank(message = "El campo singlePrice no puede estar vacío")
+    @NotNull(message = "El campo singlePrice no puede estar vacío")
     @PositiveOrZero
     private Double singlePrice;
 

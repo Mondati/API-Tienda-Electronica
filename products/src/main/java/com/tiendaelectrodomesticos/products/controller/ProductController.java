@@ -4,6 +4,7 @@ import com.tiendaelectrodomesticos.products.dto.ProductDTO;
 import com.tiendaelectrodomesticos.products.exception.ResourceNotFoundException;
 import com.tiendaelectrodomesticos.products.model.Product;
 import com.tiendaelectrodomesticos.products.service.IProductService;
+import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,7 +21,7 @@ import java.util.List;
 public class ProductController {
 
 
-    private IProductService productServ;
+    private final IProductService productServ;
 
     @Autowired
     public ProductController(IProductService productServ) {
@@ -29,16 +30,21 @@ public class ProductController {
 
 
     @PostMapping("/create")
+    @Transactional
     public ResponseEntity<String> saveProduct(@Valid @RequestBody Product product) {
-        productServ.saveProduct(product);
-        return ResponseEntity.status(HttpStatus.CREATED).body("Producto creado exitosamente");
+        try {
+            productServ.saveProduct(product);
+            return ResponseEntity.status(HttpStatus.CREATED).body("Producto creado exitosamente");
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
+        }
     }
 
 
     @GetMapping("/{code}")
     public ResponseEntity<ProductDTO> findProductByCode(@PathVariable Integer code) {
         try {
-            ProductDTO productDTO = productServ.findProduct(code);
+            ProductDTO productDTO = productServ.getProductDTO(code);
             return ResponseEntity.ok(productDTO);
         } catch (ResourceNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
@@ -58,10 +64,22 @@ public class ProductController {
 
 
     @PutMapping("/edit/{id}")
+    @Transactional
     public ResponseEntity<String> editProduct(@PathVariable Long id, @RequestBody Product product) {
         try {
             productServ.editProduct(product, id);
             return ResponseEntity.ok("Producto editado correctamente");
+        } catch (ResourceNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        }
+    }
+
+    @DeleteMapping("/delete/{id}")
+    @Transactional
+    public ResponseEntity<String> deleteProduct(@PathVariable Long id) {
+        try {
+            productServ.deleteProduct(id);
+            return ResponseEntity.ok("Producto eliminado correctamente");
         } catch (ResourceNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         }

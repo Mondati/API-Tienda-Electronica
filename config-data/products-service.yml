@@ -1,0 +1,19 @@
+spring:
+  application:
+    name: products-service  # Sets the name of the Spring application
+  datasource:
+    url: jdbc:mysql://localhost:3306/products_service?serverTimezone=UTC  # Database connection URL
+    username: root  # Database username
+    password: Yamaha 2013  # Database password
+  jpa:
+    hibernate:
+      ddl-auto: update  # Hibernate behavior for database schema generation/update
+    database-platform: org.hibernate.dialect.MySQLDialect  # Database dialect for Hibernate
+
+server:
+  port: 8082  # Port on which the Spring Boot application will run
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://eureka-sv:8761/eureka  # URL for the Eureka server used for service discovery

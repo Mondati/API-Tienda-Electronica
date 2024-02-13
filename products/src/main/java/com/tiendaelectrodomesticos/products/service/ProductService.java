@@ -1,6 +1,7 @@
 package com.tiendaelectrodomesticos.products.service;
 
 import com.tiendaelectrodomesticos.products.dto.ProductDTO;
+import com.tiendaelectrodomesticos.products.exception.DuplicateCodeException;
 import com.tiendaelectrodomesticos.products.exception.ResourceNotFoundException;
 import com.tiendaelectrodomesticos.products.model.Product;
 import com.tiendaelectrodomesticos.products.repository.IProductRepository;
@@ -24,13 +25,18 @@ public class ProductService implements IProductService {
 
     @Override
     public void saveProduct(Product product) {
-        LOGGER.info("Guardando producto");
-        productRepo.save(product);
+        Optional<Product> optionalProduct = productRepo.findByCode(product.getCode());
+        if (optionalProduct.isPresent()) {
+            throw new DuplicateCodeException("producto duplicado");
+        } else {
+            LOGGER.info("Guardando producto");
+            productRepo.save(product);
+        }
     }
 
 
     @Override
-    public ProductDTO findProduct(Integer code) {
+    public ProductDTO getProductDTO(Integer code) {
         LOGGER.info("Buscando producto por codigo");
         Optional<Product> optionalProduct = productRepo.findByCode(code);
         if (optionalProduct.isPresent()) {
@@ -63,7 +69,7 @@ public class ProductService implements IProductService {
 
 
     @Override
-    public void editProduct(Product product, Long id) throws ResourceNotFoundException {
+    public void editProduct(Product product, Long id) {
         LOGGER.info("Buscando producto por id");
         Optional<Product> searchedProduct = productRepo.findById(id);
 
@@ -80,5 +86,16 @@ public class ProductService implements IProductService {
             throw new ResourceNotFoundException("Producto no encontrado con ID: " + id);
         }
     }
+
+    @Override
+    public void deleteProduct(Long id) {
+        Optional<Product> optionalProduct = productRepo.findById(id);
+        if (optionalProduct.isPresent()) {
+            productRepo.deleteById(id);
+        } else {
+            throw new ResourceNotFoundException("Producto con id: " + id + " no enconttrado");
+        }
+    }
+
 
 }
