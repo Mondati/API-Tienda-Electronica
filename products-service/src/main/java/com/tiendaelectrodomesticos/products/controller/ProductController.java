@@ -8,6 +8,7 @@ import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
@@ -20,6 +21,8 @@ import java.util.List;
 @RequestMapping("/product")
 public class ProductController {
 
+    @Value("${server.port}")
+    private int serverPort;
 
     private final IProductService productServ;
 
@@ -44,6 +47,7 @@ public class ProductController {
     @GetMapping("/{code}")
     public ResponseEntity<ProductDTO> findProductByCode(@PathVariable Integer code) {
         try {
+            System.out.println("-------Estoy en el puerto: " + serverPort);
             ProductDTO productDTO = productServ.getProductDTO(code);
             return ResponseEntity.ok(productDTO);
         } catch (ResourceNotFoundException e) {

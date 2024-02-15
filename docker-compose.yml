@@ -1,0 +1,41 @@
+version: '0.1'
+
+services:
+  eureka-sv:
+    build: eureka-sv
+    mem_limit: 512m
+    ports:
+      - "8761:8761"
+    networks:
+      - 'tienda-network'
+  products-service:
+    build: products-service
+    mem_limit: 512m
+    ports:
+      - "8082:8082"
+    networks:
+      - 'tienda-network'
+  carts-service:
+    build: carts-service
+    mem_limit: 512m
+    ports:
+      - "8084:8084"
+    networks:
+      - 'tienda-network'
+  sales-service:
+    build: sales-service
+    mem_limit: 512m
+    ports:
+      - "8086:8086"
+    networks:
+      - 'tienda-network'
+  api-gateway:
+    build: api-gateway
+    mem_limit: 512m
+    ports:
+      - "443:443"
+    networks:
+      - 'tienda-network'
+
+networks:
+  tienda-network:

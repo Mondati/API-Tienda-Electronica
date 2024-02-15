@@ -4,3 +4,12 @@ server:
 spring:
   application:
     name: config-server
+
+  cloud:
+    config:
+      server:
+        git:
+          uri: https://github.com/Mondati/API-Tienda-Electronica.git
+          searchPaths: config-data
+          username: ${GIT_USER}
+          password: ${GIT_PASS}
