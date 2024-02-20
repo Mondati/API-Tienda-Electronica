@@ -9,7 +9,7 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>com.tienda-electrodomesticos</groupId>
-    <artifactId>products</artifactId>
+    <artifactId>products-service</artifactId>
     <version>0.1</version>
     <name>products</name>
     <description>Microservice Products</description>

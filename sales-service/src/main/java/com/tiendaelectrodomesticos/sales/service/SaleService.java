@@ -74,7 +74,6 @@ public class SaleService implements ISaleService {
     @CircuitBreaker(name = "carts-service", fallbackMethod = "fallbackGetSale")
     @Retry(name = "carts-service")
     public Optional<SaleDTO> getSaleDTO(Long id) {
-        LOGGER.info("estoy en el service");
         Optional<Sale> sale = getSale(id);
         SaleDTO saleDTO = new SaleDTO();
 

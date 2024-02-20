@@ -24,4 +24,12 @@ public class Sale {
     @NotNull
     @Positive
     private Long cartId;
+
+    @Override
+    public String toString() {
+        return "id=" + id +
+                ", fecha de venta=" + saleDate +
+                ", carrito asociado con id=" + cartId +
+                '}';
+    }
 }

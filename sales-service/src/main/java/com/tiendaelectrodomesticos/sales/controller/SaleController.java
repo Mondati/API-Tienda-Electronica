@@ -53,7 +53,7 @@ public class SaleController {
     public ResponseEntity<SaleDTO> getSale(@PathVariable Long id) {
         Optional<SaleDTO> saleDTO = saleService.getSaleDTO(id);
         if (saleDTO.isPresent()) {
-            LOGGER.info("buscando venttta dto con exitto: " + id);
+            LOGGER.info("buscando venta dto con exitto: " + id);
             return ResponseEntity.ok(saleDTO.get());
         } else {
             LOGGER.info("No se encontro venta por ID: " + id);

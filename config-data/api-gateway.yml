@@ -1,14 +1,15 @@
 spring:
   application:
-    name: api-gateway  # Sets the name of the Spring application
+    name: api-gateway
   cloud:
     gateway:
       discovery:
         locator:
-          enabled: true  # Enables service discovery for routing using Spring Cloud DiscoveryClient
-          lower-case-service-id: true  # Converts service IDs to lowercase when registering routes
-          
+          enabled: true
+          lower-case-service-id: true
 server:
-  port: 443  # Port on which the Spring Boot application will run as the API Gateway
-
-
+  port: 443
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://eureka-sv:8761/eureka/
