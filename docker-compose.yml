@@ -50,13 +50,21 @@ services:
       - MYSQL_ROOT_PASSWORD=mysql
       - MYSQL_DATABASE=products-service
       - MYSQL_DATABASE=carts-service
-      - MYSQL_DATABASE=sales_service
+      - MYSQL_DATABASE=sales-service
     ports:
       - "3307:3306"
     volumes:
       - mysql_data:/var/lib/mysql
     networks:
       - 'tienda-network'
+
+  config-server:
+    build: config-server
+    ports:
+      - "8081:8081"
+    environment:
+      - GIT_USER=${GIT_USER}
+      - GIT_PASS=${GIT_PASS}
 
 volumes:
   mysql_data:
